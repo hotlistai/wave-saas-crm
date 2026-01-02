@@ -28,8 +28,10 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     pcntl \
     bcmath \
     gd \
-    zip \
-    intl
+    zip
+
+# Install intl extension separately to ensure proper configuration
+RUN docker-php-ext-configure intl && docker-php-ext-install intl
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
