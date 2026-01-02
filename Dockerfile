@@ -14,6 +14,7 @@ RUN apk add --no-cache \
     freetype-dev \
     libjpeg-turbo-dev \
     postgresql-dev \
+    icu-dev \
     zip \
     unzip
 
@@ -28,6 +29,9 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     bcmath \
     gd \
     zip
+
+# Install intl extension separately to ensure proper configuration
+RUN docker-php-ext-configure intl && docker-php-ext-install intl
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
