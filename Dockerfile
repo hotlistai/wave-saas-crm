@@ -18,6 +18,9 @@ RUN apk add --no-cache \
     zip \
     unzip
 
+# Create the supervisor log directory and set correct permissions
+RUN mkdir -p /var/log/supervisor && chown -R www-data:www-data /var/log/supervisor
+
 # Install PHP extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install \
