@@ -18,8 +18,10 @@ RUN apk add --no-cache \
     zip \
     unzip
 
-# Create the supervisor log directory and set correct permissions
-RUN mkdir -p /var/log/supervisor && chown -R www-data:www-data /var/log/supervisor
+# Create necessary directories and set correct permissions
+RUN mkdir -p /var/log/supervisor /var/run /var/log/nginx \
+    && chown -R www-data:www-data /var/log/supervisor \
+    && chmod 777 /var/run
 
 # Install PHP extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
@@ -53,7 +55,9 @@ RUN npm install && npm run build
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
-    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache \
+    && php artisan config:cache || true \
+    && php artisan route:cache || true
 
 # Copy nginx configuration
 COPY docker/nginx.conf /etc/nginx/nginx.conf
@@ -61,8 +65,12 @@ COPY docker/nginx.conf /etc/nginx/nginx.conf
 # Copy supervisor configuration
 COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
+# Copy and set up startup script
+COPY docker/startup.sh /usr/local/bin/startup.sh
+RUN chmod +x /usr/local/bin/startup.sh
+
 # Expose port
 EXPOSE 80
 
-# Start supervisor
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+# Start using startup script
+CMD ["/usr/local/bin/startup.sh"]
